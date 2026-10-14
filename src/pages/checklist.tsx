@@ -19,15 +19,15 @@ export function Checklist() {
   const issueOverallPercent = (subsystems.flatMap((subsystem) => subsystem.items).filter((item) => item.status === 'Issue').length / totalItems) * 100
 
   return (
-    <main className="mx-auto max-w-3xl py-8">
-      <div className="mb-7 space-y-2">
+    <main className="mx-auto max-w-3xl py-5 sm:py-8">
+      <div className="mb-5 space-y-2 sm:mb-7">
         <h1 className="text-3xl font-black tracking-tight text-[#002a44] dark:text-[#eef8ff] sm:text-4xl">Pre Match Checklist</h1>
         <p className="text-[#315979] dark:text-[#a9c9df]">Work through every subsystem before the robot leaves the pit. Changes save automatically.</p>
       </div>
 
       <Card className="mb-5 border-2 border-[#b6d8ed] bg-white shadow-[0_10px_24px_rgb(0_55_92/0.08)] dark:border-[#1c5375] dark:bg-[#0d2a40]">
-        <CardHeader className="gap-4">
-          <div className="grid gap-5 sm:grid-cols-[1fr_9rem] sm:items-center">
+        <CardHeader className="gap-4 p-4 sm:p-6">
+          <div className="grid gap-4 sm:grid-cols-[1fr_9rem] sm:items-center sm:gap-5">
             <div className="space-y-4">
               {role === 'Mentor' ? (
                 <div className="grid gap-3 sm:grid-cols-[1fr_8rem_8rem]">
@@ -61,7 +61,7 @@ export function Checklist() {
             <img
               src={robotImageUrl}
               alt="Team 341 robot Miss Daisy"
-              className="mx-auto size-28 rounded-2xl object-cover object-center shadow-sm"
+              className="h-44 w-full rounded-2xl object-cover object-center shadow-sm sm:mx-auto sm:size-28"
             />
           </div>
         </CardHeader>
@@ -77,9 +77,9 @@ export function Checklist() {
           const noteItems = subsystem.items.filter((item) => item.notes.trim())
           return <Link key={subsystem.id} to={`/checklist/${subsystem.id}`} className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0086cb]">
             <Card className="border border-[#b6d8ed] bg-white/70 transition-colors hover:bg-[#f5fbff] dark:border-[#12648b] dark:bg-[#062b43]/40 dark:hover:bg-[#0b4564]">
-              <div className="flex min-h-20 items-center justify-between gap-3 px-4 py-4 sm:px-5">
-                <span className="flex min-w-0 items-center gap-3">{subsystem.imageUrl ? <img src={subsystem.imageUrl} alt="" className="size-12 shrink-0 rounded-xl object-cover" /> : <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#dff0fa] text-[#00517e] dark:bg-[#0b4564] dark:text-[#65c6f7]"><ClipboardCheck className="size-6" /></span>}<span className="min-w-0"><span className="block truncate text-lg font-black text-[#002a44] dark:text-[#eef8ff]">{subsystem.name}</span><span className="text-sm text-[#315979] dark:text-[#a9c9df]">{subsystem.items.length} checklist items</span></span></span>
-                <span className="flex items-center gap-3"><span className="relative flex h-3 w-24 items-center"><span className="absolute -top-4 right-0 text-xs font-black text-[#315979] dark:text-[#b8d2df]">{percent}%</span><span className="flex h-3 w-full overflow-hidden rounded-full bg-[#d8ecf8]" aria-label={`${percent}% complete`}><span className="bg-[#3a9525]" style={{ width: `${okPercent}%` }} /><span className="bg-[#c73d3d]" style={{ width: `${issuePercent}%` }} /></span></span><ChevronRight className="size-5 shrink-0 text-[#315979] dark:text-[#a9c9df]" /></span>
+              <div className="flex min-h-20 flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-5">
+                <span className="flex min-w-0 items-center gap-3">{subsystem.imageUrl ? <img src={subsystem.imageUrl} alt="" className="size-16 shrink-0 rounded-xl object-cover sm:size-12" /> : <span className="grid size-16 shrink-0 place-items-center rounded-xl bg-[#dff0fa] text-[#00517e] dark:bg-[#0b4564] dark:text-[#65c6f7] sm:size-12"><ClipboardCheck className="size-7 sm:size-6" /></span>}<span className="min-w-0"><span className="block truncate text-lg font-black text-[#002a44] dark:text-[#eef8ff]">{subsystem.name}</span><span className="text-sm text-[#315979] dark:text-[#a9c9df]">{subsystem.items.length} checklist items</span></span></span>
+                <span className="flex w-full items-center gap-3 sm:w-auto"><span className="relative flex h-3 min-w-0 flex-1 items-center sm:w-24 sm:flex-none"><span className="absolute -top-4 right-0 text-xs font-black text-[#315979] dark:text-[#b8d2df]">{percent}%</span><span className="flex h-3 w-full overflow-hidden rounded-full bg-[#d8ecf8]" aria-label={`${percent}% complete`}><span className="bg-[#3a9525]" style={{ width: `${okPercent}%` }} /><span className="bg-[#c73d3d]" style={{ width: `${issuePercent}%` }} /></span></span><ChevronRight className="size-5 shrink-0 text-[#315979] dark:text-[#a9c9df]" /></span>
               </div>
               {(issueItems.length > 0 || noteItems.length > 0) ? <div className="border-t border-[#b6d8ed] px-4 py-3 text-sm dark:border-[#12648b] sm:px-5"><div className="space-y-2">{issueItems.length > 0 ? <div><p className="font-black text-[#c73d3d]">Issues</p><ul className="mt-1 list-disc space-y-1 pl-5 text-[#7d3030] dark:text-[#f0a5a5]">{issueItems.map((item) => <li key={`issue-${item.id}`}>{item.name}</li>)}</ul></div> : null}{noteItems.length > 0 ? <div><p className="font-black text-[#315979] dark:text-[#b8d2df]">Notes</p><ul className="mt-1 space-y-1 text-[#315979] dark:text-[#b8d2df]">{noteItems.map((item) => <li key={`note-${item.id}`}><span className="font-bold">{item.name}:</span> {item.notes}</li>)}</ul></div> : null}</div></div> : null}
             </Card>

@@ -20,5 +20,5 @@ export function ImagePicker({ id, label, value, onChange }: { id: string; label:
     event.target.value = ''
   }
 
-  return <div className="grid gap-2"><Label htmlFor={id}>{label}</Label><div className="flex flex-wrap items-center gap-3"><Button type="button" variant="outline" className="h-10" onClick={() => inputRef.current?.click()}><Upload className="size-4" />Choose picture</Button>{value ? <img src={value} alt="Selected" className="size-12 rounded-lg object-cover" /> : null}<input ref={inputRef} id={id} type="file" accept="image/*" className="sr-only" onChange={chooseFiles} /></div></div>
+  return <div className="grid gap-2"><Label htmlFor={id}>{label}</Label><div className="flex flex-wrap items-center gap-3"><Button type="button" variant="outline" className="h-10" onClick={() => inputRef.current?.click()}><Upload className="size-4" />Choose picture</Button>{value ? <img src={value} alt="Selected" className="size-20 rounded-lg object-cover sm:size-12" /> : null}<input ref={inputRef} id={id} type="file" accept="image/*" className="sr-only" onChange={chooseFiles} /></div></div>
 }

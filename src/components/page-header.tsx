@@ -5,6 +5,9 @@ import { useNavigate } from 'react-router'
 
 import { Button } from '@/components/ui/button'
 import { useUiStore } from '@/lib/ui-store'
+import { api } from '../../convex/_generated/api'
+import { convex } from '@/lib/convex'
+import { getSessionId } from '@/lib/session'
 
 export function PageHeader() {
   const { resolvedTheme, setTheme } = useTheme()
@@ -14,6 +17,7 @@ export function PageHeader() {
   const signOut = useUiStore((state) => state.signOut)
 
   function handleSignOut() {
+    if (convex && displayName) void convex.mutation(api.app.releaseSession, { name: displayName, sessionId: getSessionId() })
     signOut()
     setMenuOpen(false)
     void navigate('/')

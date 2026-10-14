@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,6 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useChecklist } from '@/lib/checklist-context'
 import { useUiStore } from '@/lib/ui-store'
+import { api } from '../../convex/_generated/api'
+import { convex } from '@/lib/convex'
+import { getSessionId } from '@/lib/session'
 
 export function SignIn() {
   const navigate = useNavigate()
@@ -18,13 +22,21 @@ export function SignIn() {
 
   if (isSignedIn) return <Navigate to="/checklist" replace />
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const normalizedName = `${firstName.trim()} ${lastInitial.trim().toUpperCase()}`.trim()
     if (!firstName.trim() || !lastInitial.trim()) return
     const member = members.find((item) => item.name.toLowerCase() === normalizedName.toLowerCase())
-    registerMember(normalizedName, member?.role ?? 'Student')
-    signIn(normalizedName, member?.role ?? 'Student')
+    const role = member?.role ?? 'Student'
+    if (convex) {
+      const result = await convex.mutation(api.app.claimSession, { name: normalizedName, role, sessionId: getSessionId() })
+      if (!result.ok) {
+        toast.error(`${normalizedName} is already signed in on another device.`)
+        return
+      }
+    }
+    registerMember(normalizedName, role)
+    signIn(normalizedName, role)
     void navigate('/checklist')
   }
 

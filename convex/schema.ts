@@ -13,5 +13,6 @@ export default defineSchema({
     name: v.string(),
     role: v.string(),
     lastSeenAt: v.number(),
+    activeSessionId: v.optional(v.string()),
   }).index('by_name', ['name']),
 })

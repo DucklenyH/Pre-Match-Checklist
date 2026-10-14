@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, Navigate } from 'react-router'
 
 import { AppLayout } from '@/layouts/app-layout'
 import { Checklist } from '@/pages/checklist'
@@ -21,4 +21,5 @@ export const router = createBrowserRouter([
       { path: '/mentor-dashboard', Component: MentorDashboard },
     ],
   },
+  { path: '*', element: <Navigate to="/" replace /> },
 ])

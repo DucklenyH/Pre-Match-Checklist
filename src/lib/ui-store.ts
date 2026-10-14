@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 type UiState = {
   isSignedIn: boolean
@@ -14,7 +15,7 @@ type UiState = {
   setSelectedItemId: (selectedItemId: string | null) => void
 }
 
-export const useUiStore = create<UiState>((set) => ({
+export const useUiStore = create<UiState>()(persist((set) => ({
   isSignedIn: false,
   displayName: '',
   role: 'Student',
@@ -26,4 +27,11 @@ export const useUiStore = create<UiState>((set) => ({
   setActiveTab: (activeTab) => set({ activeTab }),
   setSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
   setSelectedItemId: (selectedItemId) => set({ selectedItemId }),
+}), {
+  name: 'pre-match-checklist-ui',
+  partialize: (state) => ({
+    isSignedIn: state.isSignedIn,
+    displayName: state.displayName,
+    role: state.role,
+  }),
 }))

@@ -14,7 +14,7 @@ const content = (
     enableSystem
     disableTransitionOnChange
   >
-    <App />
+    <App cloudEnabled={Boolean(convex)} />
   </ThemeProvider>
 )
 

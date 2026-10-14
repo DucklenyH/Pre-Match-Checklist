@@ -10,7 +10,7 @@ import { useUiStore } from '@/lib/ui-store'
 
 export function SignIn() {
   const navigate = useNavigate()
-  const { members } = useChecklist()
+  const { members, registerMember } = useChecklist()
   const isSignedIn = useUiStore((state) => state.isSignedIn)
   const signIn = useUiStore((state) => state.signIn)
   const [firstName, setFirstName] = useState('')
@@ -23,6 +23,7 @@ export function SignIn() {
     const normalizedName = `${firstName.trim()} ${lastInitial.trim().toUpperCase()}`.trim()
     if (!firstName.trim() || !lastInitial.trim()) return
     const member = members.find((item) => item.name.toLowerCase() === normalizedName.toLowerCase())
+    registerMember(normalizedName, member?.role ?? 'Student')
     signIn(normalizedName, member?.role ?? 'Student')
     void navigate('/checklist')
   }

@@ -3,9 +3,9 @@ import { RouterProvider } from 'react-router/dom'
 import { ChecklistProvider } from '@/lib/checklist-context'
 import { router } from '@/routes'
 
-function App() {
+function App({ cloudEnabled = false }: { cloudEnabled?: boolean }) {
   return (
-    <ChecklistProvider>
+    <ChecklistProvider cloudEnabled={cloudEnabled}>
       <RouterProvider router={router} />
     </ChecklistProvider>
   )

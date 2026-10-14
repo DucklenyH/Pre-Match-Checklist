@@ -1,4 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+
+import { api } from '../../convex/_generated/api'
 
 export type ChecklistStatus = 'OK' | 'Issue' | 'N/A' | null
 export type MemberRole = 'Student' | 'Subsystem Leader' | 'Mentor'
@@ -61,6 +64,7 @@ type ChecklistContextValue = {
   removeItem: (subsystemId: string, itemId: string) => void
   updateMemberRole: (memberId: string, role: MemberRole) => void
   removeMember: (memberId: string) => void
+  registerMember: (name: string, role: MemberRole) => void
   removeHistory: (historyId: string) => void
 }
 
@@ -168,7 +172,7 @@ export function progressForSubsystem(subsystem: Subsystem) {
 
 const ChecklistContext = createContext<ChecklistContextValue | null>(null)
 
-export function ChecklistProvider({ children }: { children: ReactNode }) {
+export function ChecklistProvider({ children, cloudEnabled = false }: { children: ReactNode; cloudEnabled?: boolean }) {
   const [robotImageUrl, setRobotImageUrl] = useState('/team-341-robot.png')
   const [competition, setCompetition] = useState('Pittsburgh Regional')
   const [competitions, setCompetitions] = useState(starterCompetitions)
@@ -254,10 +258,52 @@ export function ChecklistProvider({ children }: { children: ReactNode }) {
     removeItem: (subsystemId, itemId) => setSubsystems((currentSubsystems) => currentSubsystems.map((subsystem) => subsystem.id === subsystemId ? { ...subsystem, items: subsystem.items.filter((checklistItem) => checklistItem.id !== itemId) } : subsystem)),
     updateMemberRole: (memberId, role) => setMembers((currentMembers) => currentMembers.map((member) => member.id === memberId ? { ...member, role } : member)),
     removeMember: (memberId) => setMembers((currentMembers) => currentMembers.filter((member) => member.id !== memberId)),
+    registerMember: (name, role) => setMembers((currentMembers) => currentMembers.some((member) => member.name.toLowerCase() === name.toLowerCase()) ? currentMembers : [...currentMembers, { id: slug(name), name, role }]),
     removeHistory: (historyId) => setHistory((currentHistory) => currentHistory.filter((match) => match.id !== historyId)),
   }), [competition, competitions, history, matchType, members, qualificationNumber, robotImageUrl, subsystems])
 
-  return <ChecklistContext.Provider value={value}>{children}</ChecklistContext.Provider>
+  return <ChecklistContext.Provider value={value}>{cloudEnabled ? <CloudSync snapshot={{ robotImageUrl, competition, matchType, qualificationNumber, competitions, subsystems, members, history }} onHydrate={(snapshot) => { setRobotImageUrl(snapshot.robotImageUrl || '/team-341-robot.png'); setCompetition(snapshot.competition); setMatchType(snapshot.matchType); setQualificationNumber(snapshot.qualificationNumber); setCompetitions(snapshot.competitions); setSubsystems(snapshot.subsystems); setMembers(snapshot.members); setHistory(snapshot.history) }} /> : null}{children}</ChecklistContext.Provider>
+}
+
+type CloudSnapshot = {
+  robotImageUrl: string
+  competition: string
+  matchType: MatchType
+  qualificationNumber: number
+  competitions: string[]
+  subsystems: Subsystem[]
+  members: TeamMember[]
+  history: MatchHistory[]
+}
+
+function CloudSync({ snapshot, onHydrate }: { snapshot: CloudSnapshot; onHydrate: (snapshot: CloudSnapshot) => void }) {
+  const remote = useQuery(api.app.getSnapshot)
+  const saveSnapshot = useMutation(api.app.saveSnapshot)
+  const hydrated = useRef(false)
+  const skipSaveOnce = useRef(false)
+  const lastSaved = useRef('')
+  const serialized = JSON.stringify(snapshot)
+
+  useEffect(() => {
+    if (remote === undefined || hydrated.current) return
+    hydrated.current = true
+    if (remote.snapshot) {
+      skipSaveOnce.current = true
+      onHydrate(remote.snapshot as CloudSnapshot)
+    }
+  }, [remote, onHydrate])
+
+  useEffect(() => {
+    if (!hydrated.current || lastSaved.current === serialized) return
+    if (skipSaveOnce.current) {
+      skipSaveOnce.current = false
+      return
+    }
+    lastSaved.current = serialized
+    void saveSnapshot({ snapshot, users: snapshot.members.map((member) => ({ name: member.name, role: member.role, lastSeenAt: 0 })) })
+  }, [saveSnapshot, serialized, snapshot])
+
+  return null
 }
 
 export function useChecklist() {

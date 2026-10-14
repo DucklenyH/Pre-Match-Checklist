@@ -299,9 +299,12 @@ function CloudSync({ snapshot, onHydrate }: { snapshot: CloudSnapshot; onHydrate
       skipSaveOnce.current = false
       return
     }
-    lastSaved.current = serialized
     const convexSnapshot = JSON.parse(serialized) as CloudSnapshot
-    void saveSnapshot({ snapshot: convexSnapshot, users: convexSnapshot.members.map((member) => ({ name: member.name, role: member.role, lastSeenAt: 0 })) }).catch((error: unknown) => console.error('Unable to save checklist snapshot to Convex', error))
+    void saveSnapshot({ snapshot: convexSnapshot, users: convexSnapshot.members.map((member) => ({ name: member.name, role: member.role, lastSeenAt: 0 })) })
+      .then(() => {
+        lastSaved.current = serialized
+      })
+      .catch((error: unknown) => console.error('Unable to save checklist snapshot to Convex', error))
   }, [saveSnapshot, serialized, snapshot])
 
   return null

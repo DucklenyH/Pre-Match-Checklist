@@ -6,12 +6,12 @@ import { Card, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { progressFor, useChecklist } from '@/lib/checklist-context'
+import { progressFor, useChecklist, type MatchType } from '@/lib/checklist-context'
 import { useUiStore } from '@/lib/ui-store'
 
 export function Checklist() {
   const role = useUiStore((state) => state.role)
-  const { competition, competitions, qualificationNumber, subsystems, setMatchSettings } = useChecklist()
+  const { competition, competitions, matchType, qualificationNumber, robotImageUrl, subsystems, setMatchSettings } = useChecklist()
   const [qualificationDraft, setQualificationDraft] = useState(String(qualificationNumber))
   const overall = progressFor(subsystems)
   const totalItems = subsystems.reduce((count, subsystem) => count + subsystem.items.length, 0) || 1
@@ -30,21 +30,28 @@ export function Checklist() {
           <div className="grid gap-5 sm:grid-cols-[1fr_9rem] sm:items-center">
             <div className="space-y-4">
               {role === 'Mentor' ? (
-                <div className="grid gap-3 sm:grid-cols-[1fr_8rem]">
+                <div className="grid gap-3 sm:grid-cols-[1fr_8rem_8rem]">
                   <div className="grid gap-2">
                     <Label>Competition</Label>
-                    <Select value={competition} onValueChange={(value) => value && setMatchSettings(value, qualificationNumber)}>
+                    <Select value={competition} onValueChange={(value) => value && setMatchSettings(value, qualificationNumber, matchType)}>
                       <SelectTrigger className="h-11 w-full border-[#0086cb] bg-white dark:bg-[#102f47]"><SelectValue /></SelectTrigger>
                       <SelectContent>{competitions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="qualification">Qualification</Label>
-                    <Input id="qualification" type="number" min="1" value={qualificationDraft} onChange={(event) => setQualificationDraft(event.target.value)} onBlur={() => setMatchSettings(competition, Number(qualificationDraft) || 1)} className="h-11 border-[#0086cb] bg-white dark:bg-[#102f47] dark:text-white" />
+                    <Label>Match type</Label>
+                    <Select value={matchType} onValueChange={(value) => value && setMatchSettings(competition, Number(qualificationDraft) || 1, value as MatchType)}>
+                      <SelectTrigger className="h-11 border-[#0086cb] bg-white dark:bg-[#102f47]"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="Qualification">Qualification</SelectItem><SelectItem value="Playoff">Playoff</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="match-number">{matchType} match</Label>
+                    <Input id="match-number" type="number" min="1" value={qualificationDraft} onChange={(event) => setQualificationDraft(event.target.value)} onBlur={() => setMatchSettings(competition, Number(qualificationDraft) || 1, matchType)} className="h-11 border-[#0086cb] bg-white dark:bg-[#102f47] dark:text-white" />
                   </div>
                 </div>
               ) : (
-                <p className="text-xl font-black text-[#002a44] dark:text-white">{competition} · Qualification {qualificationNumber}</p>
+                <p className="text-xl font-black text-[#002a44] dark:text-white">{competition} · {matchType} {qualificationNumber}</p>
               )}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm font-bold text-[#002a44] dark:text-white"><span>Overall robot readiness</span><span>{overall}%</span></div>
@@ -52,7 +59,7 @@ export function Checklist() {
               </div>
             </div>
             <img
-              src="/team-341-robot.png"
+              src={robotImageUrl}
               alt="Team 341 robot Miss Daisy"
               className="mx-auto size-28 rounded-2xl object-cover object-center shadow-sm"
             />

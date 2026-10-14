@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 export type ChecklistStatus = 'OK' | 'Issue' | 'N/A' | null
 export type MemberRole = 'Student' | 'Subsystem Leader' | 'Mentor'
+export type MatchType = 'Qualification' | 'Playoff'
 
 export type ChecklistItem = {
   id: string
@@ -28,6 +29,7 @@ export type TeamMember = {
 export type MatchHistory = {
   id: string
   competition: string
+  matchType: MatchType
   qualificationNumber: number
   completedBy: string
   recordedAt: string
@@ -35,13 +37,16 @@ export type MatchHistory = {
 }
 
 type ChecklistContextValue = {
+  robotImageUrl: string
   competition: string
   competitions: string[]
+  matchType: MatchType
   qualificationNumber: number
   subsystems: Subsystem[]
   members: TeamMember[]
   history: MatchHistory[]
-  setMatchSettings: (competition: string, qualificationNumber: number) => void
+  setMatchSettings: (competition: string, qualificationNumber: number, matchType?: MatchType) => void
+  setRobotImage: (imageUrl: string) => void
   addCompetition: (name: string) => void
   removeCompetition: (name: string) => void
   setItemStatus: (subsystemId: string, itemId: string, status: ChecklistStatus) => void
@@ -164,8 +169,10 @@ export function progressForSubsystem(subsystem: Subsystem) {
 const ChecklistContext = createContext<ChecklistContextValue | null>(null)
 
 export function ChecklistProvider({ children }: { children: ReactNode }) {
+  const [robotImageUrl, setRobotImageUrl] = useState('/team-341-robot.png')
   const [competition, setCompetition] = useState('Pittsburgh Regional')
   const [competitions, setCompetitions] = useState(starterCompetitions)
+  const [matchType, setMatchType] = useState<MatchType>('Qualification')
   const [qualificationNumber, setQualificationNumber] = useState(42)
   const [subsystems, setSubsystems] = useState<Subsystem[]>(checklistSubsystems)
   const [members, setMembers] = useState<TeamMember[]>(starterMembers)
@@ -178,25 +185,33 @@ export function ChecklistProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo<ChecklistContextValue>(() => ({
+    robotImageUrl,
     competition,
     competitions,
+    matchType,
     qualificationNumber,
     subsystems,
     members,
     history,
-    setMatchSettings: (nextCompetition, nextQualificationNumber) => {
-      setHistory((currentHistory) => [
-        {
-          id: id('match'),
-          competition,
-          qualificationNumber,
-          completedBy: 'Declan H',
-          recordedAt: new Date().toISOString(),
-          subsystems: cloneSubsystems(subsystems),
-        },
-        ...currentHistory,
-      ])
+    setRobotImage: (imageUrl) => setRobotImageUrl(imageUrl || '/team-341-robot.png'),
+    setMatchSettings: (nextCompetition, nextQualificationNumber, nextMatchType = matchType) => {
+      const hasChecklistActivity = subsystems.some((subsystem) => subsystem.items.some((checklistItem) => checklistItem.status !== null || checklistItem.notes.trim().length > 0))
+      if (hasChecklistActivity) {
+        setHistory((currentHistory) => [
+          {
+            id: id('match'),
+            competition,
+            matchType,
+            qualificationNumber,
+            completedBy: 'Declan H',
+            recordedAt: new Date().toISOString(),
+            subsystems: cloneSubsystems(subsystems),
+          },
+          ...currentHistory,
+        ])
+      }
       setCompetition(nextCompetition)
+      setMatchType(nextMatchType)
       setQualificationNumber(nextQualificationNumber)
       setSubsystems((currentSubsystems) => cloneSubsystems(currentSubsystems).map((subsystem) => ({
         ...subsystem,
@@ -240,7 +255,7 @@ export function ChecklistProvider({ children }: { children: ReactNode }) {
     updateMemberRole: (memberId, role) => setMembers((currentMembers) => currentMembers.map((member) => member.id === memberId ? { ...member, role } : member)),
     removeMember: (memberId) => setMembers((currentMembers) => currentMembers.filter((member) => member.id !== memberId)),
     removeHistory: (historyId) => setHistory((currentHistory) => currentHistory.filter((match) => match.id !== historyId)),
-  }), [competition, competitions, history, members, qualificationNumber, subsystems])
+  }), [competition, competitions, history, matchType, members, qualificationNumber, robotImageUrl, subsystems])
 
   return <ChecklistContext.Provider value={value}>{children}</ChecklistContext.Provider>
 }

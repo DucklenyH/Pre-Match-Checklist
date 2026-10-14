@@ -282,16 +282,38 @@ function CloudSync({ snapshot, onHydrate }: { snapshot: CloudSnapshot; onHydrate
   const hydrated = useRef(false)
   const skipSaveOnce = useRef(false)
   const lastSaved = useRef('')
+  const pendingSave = useRef('')
   const serialized = JSON.stringify(snapshot)
 
   useEffect(() => {
-    if (remote === undefined || hydrated.current) return
-    hydrated.current = true
-    if (remote.snapshot) {
-      skipSaveOnce.current = true
-      onHydrate(remote.snapshot as CloudSnapshot)
+    if (remote === undefined) return
+
+    const remoteSnapshot = remote.snapshot as CloudSnapshot | null
+    const remoteSerialized = remoteSnapshot ? JSON.stringify(remoteSnapshot) : ''
+
+    if (!hydrated.current) {
+      hydrated.current = true
+      if (remoteSnapshot) {
+        skipSaveOnce.current = true
+        lastSaved.current = remoteSerialized
+        onHydrate(remoteSnapshot)
+      }
+      return
     }
-  }, [remote, onHydrate])
+
+    // Convex queries are live. Apply changes made by another client, but do
+    // not overwrite a local edit while its mutation is still in flight.
+    if (
+      remoteSnapshot &&
+      !pendingSave.current &&
+      remoteSerialized !== serialized &&
+      remoteSerialized !== lastSaved.current
+    ) {
+      skipSaveOnce.current = true
+      lastSaved.current = remoteSerialized
+      onHydrate(remoteSnapshot)
+    }
+  }, [onHydrate, remote, serialized])
 
   useEffect(() => {
     if (!hydrated.current || lastSaved.current === serialized) return
@@ -300,11 +322,18 @@ function CloudSync({ snapshot, onHydrate }: { snapshot: CloudSnapshot; onHydrate
       return
     }
     const convexSnapshot = JSON.parse(serialized) as CloudSnapshot
+    pendingSave.current = serialized
     void saveSnapshot({ snapshot: convexSnapshot, users: convexSnapshot.members.map((member) => ({ name: member.name, role: member.role, lastSeenAt: 0 })) })
       .then(() => {
-        lastSaved.current = serialized
+        if (pendingSave.current === serialized) {
+          pendingSave.current = ''
+          lastSaved.current = serialized
+        }
       })
-      .catch((error: unknown) => console.error('Unable to save checklist snapshot to Convex', error))
+      .catch((error: unknown) => {
+        if (pendingSave.current === serialized) pendingSave.current = ''
+        console.error('Unable to save checklist snapshot to Convex', error)
+      })
   }, [saveSnapshot, serialized, snapshot])
 
   return null

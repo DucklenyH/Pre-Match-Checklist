@@ -14,6 +14,9 @@ export function PageHeader() {
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const displayName = useUiStore((state) => state.displayName)
+  const role = useUiStore((state) => state.role)
+  const mentorCanEditMatch = useUiStore((state) => state.mentorCanEditMatch)
+  const setMentorCanEditMatch = useUiStore((state) => state.setMentorCanEditMatch)
   const signOut = useUiStore((state) => state.signOut)
 
   function handleSignOut() {
@@ -33,6 +36,7 @@ export function PageHeader() {
         </div>
       </div>
       <div className="flex items-center gap-1">
+        {role === 'Mentor' ? <button type="button" role="switch" aria-checked={mentorCanEditMatch} aria-label="Edit match details" title="Edit match details" onClick={() => setMentorCanEditMatch(!mentorCanEditMatch)} className={`relative inline-flex h-7 w-12 shrink-0 rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0086cb] ${mentorCanEditMatch ? 'border-[#00517e] bg-[#00517e]' : 'border-[#9ecde7] bg-white dark:border-[#1c5375] dark:bg-[#0d2a40]'}`}><span className={`pointer-events-none block size-5 rounded-full bg-white shadow-sm transition-transform ${mentorCanEditMatch ? 'translate-x-5' : 'translate-x-0'}`} /></button> : null}
         <Button
           variant="ghost"
           size="icon"

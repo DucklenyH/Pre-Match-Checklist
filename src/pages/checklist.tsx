@@ -12,7 +12,6 @@ import { useUiStore } from '@/lib/ui-store'
 export function Checklist() {
   const role = useUiStore((state) => state.role)
   const mentorCanEditMatch = useUiStore((state) => state.mentorCanEditMatch)
-  const setMentorCanEditMatch = useUiStore((state) => state.setMentorCanEditMatch)
   const { competition, competitions, matchType, qualificationNumber, robotImageUrl, subsystems, setMatchSettings } = useChecklist()
   const [qualificationDraft, setQualificationDraft] = useState(String(qualificationNumber))
   const overall = progressFor(subsystems)
@@ -33,10 +32,6 @@ export function Checklist() {
             <div className="space-y-4">
               {role === 'Mentor' ? (
                 <>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[#b6d8ed] bg-[#eaf4fb] px-3 py-2.5 dark:border-[#1c5375] dark:bg-[#102f47]">
-                    <div className="min-w-0"><p className="text-sm font-bold text-[#002a44] dark:text-white">Edit match details</p><p className="text-xs text-[#315979] dark:text-[#b8d2df]">Allow event and match changes</p></div>
-                    <button type="button" role="switch" aria-checked={mentorCanEditMatch} aria-label="Edit match details" onClick={() => setMentorCanEditMatch(!mentorCanEditMatch)} className={`relative inline-flex h-7 w-12 shrink-0 rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0086cb] ${mentorCanEditMatch ? 'border-[#00517e] bg-[#00517e]' : 'border-[#9ecde7] bg-white dark:bg-[#0d2a40]'}`}><span className={`pointer-events-none block size-5 rounded-full bg-white shadow-sm transition-transform ${mentorCanEditMatch ? 'translate-x-5' : 'translate-x-0'}`} /></button>
-                  </div>
                   {mentorCanEditMatch ? (
                 <div className="grid gap-3 sm:grid-cols-[1fr_8rem_8rem]">
                   <div className="grid gap-2">

@@ -8,11 +8,13 @@ type UiState = {
   activeTab: string
   isSidebarOpen: boolean
   selectedItemId: string | null
+  mentorCanEditMatch: boolean
   signIn: (displayName: string, role: UiState['role']) => void
   signOut: () => void
   setActiveTab: (activeTab: string) => void
   setSidebarOpen: (isSidebarOpen: boolean) => void
   setSelectedItemId: (selectedItemId: string | null) => void
+  setMentorCanEditMatch: (mentorCanEditMatch: boolean) => void
 }
 
 export const useUiStore = create<UiState>()(persist((set) => ({
@@ -22,11 +24,13 @@ export const useUiStore = create<UiState>()(persist((set) => ({
   activeTab: 'overview',
   isSidebarOpen: false,
   selectedItemId: null,
+  mentorCanEditMatch: false,
   signIn: (displayName, role) => set({ displayName, role, isSignedIn: true }),
   signOut: () => set({ displayName: '', role: 'Student', isSignedIn: false }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
   setSelectedItemId: (selectedItemId) => set({ selectedItemId }),
+  setMentorCanEditMatch: (mentorCanEditMatch) => set({ mentorCanEditMatch }),
 }), {
   name: 'pre-match-checklist-ui',
   partialize: (state) => ({
